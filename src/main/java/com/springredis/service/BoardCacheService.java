@@ -5,26 +5,24 @@ import com.springredis.repository.BoardRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
-public class BoardService {
+@RequiredArgsConstructor
+public class BoardCacheService {
     
     private final BoardRepository boardRepository;
     
-    private final BoardCacheService  boardCacheService;
-    
-    
-    public Page<Board> getBoard(Pageable page) {
-        List<Board> boards = boardCacheService.getBoardFromCache(page);
-        Long count = boardRepository.boardCount();
-        return new PageImpl<>(boards, page, count);
+    @Cacheable(
+            cacheNames = "getBoard",
+            key = "'board:page:' + #page.pageNumber + ':size:' + #page.pageSize",
+            cacheManager = "boardCacheManager"
+    )
+    public List<Board> getBoardFromCache(Pageable page) {
+        return boardRepository.findAllBoards(page).getContent();   // 캐싱은 List만
     }
 }

@@ -35,4 +35,11 @@ public class BoardRepositoryImpl implements BoardQueryRepository {
         
         return PageableExecutionUtils.getPage(result, page, countQuery::fetchOne);
     }
+    
+    @Override
+    public Long boardCount() {
+        return queryFactory.select(board.count())
+                .from(board)
+                .fetchOne();
+    }
 }
